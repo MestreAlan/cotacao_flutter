@@ -1,60 +1,279 @@
-import 'dart:convert'; // Para usar json.decode
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class HomeMaterial extends StatefulWidget {
+  const HomeMaterial({super.key});
+
   @override
-  _HomeMaterialState createState() => _HomeMaterialState();
+  State<HomeMaterial> createState() => _HomeMaterialState();
 }
 
 class _HomeMaterialState extends State<HomeMaterial> {
-  // Função para pegar os dados da API
-  Future<Map<String, dynamic>> fetchData() async {
-    final response = await http.get(
-      Uri.parse('https://api.hgbrasil.com/finance/quotations?key=046f079b'),
-    );
+  late Future<Map<String, dynamic>> dadosCotacoes;
 
-    if (response.statusCode == 200) {
-      return json.decode(response.body); // Converte a resposta para Map
-    } else {
-      throw Exception('Falha ao carregar dados');
+  @override
+  void initState() {
+    super.initState();
+    dadosCotacoes = getDadosCotacoes();
+  }
+
+  Future<Map<String, dynamic>> getDadosCotacoes() async {
+    print("get dados");
+    try {
+      final res = await http.get(
+        Uri.parse('http://api.hgbrasil.com/finance/quotations?key=046f079b'),
+      );
+
+      if (res.statusCode != HttpStatus.ok) {
+        throw 'Erro de conexão';
+      }
+
+      final data = jsonDecode(res.body);
+
+      return data;
+    } catch (e) {
+      throw e.toString();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Cotações de Moedas')),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: fetchData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            var data =
-                snapshot
-                    .data!['results']['currencies']; // Acessando 'currencies'
-            var moedas = data.keys.toList(); // Pegando as chaves (moedas)
-
-            return ListView.builder(
-              itemCount: moedas.length,
-              itemBuilder: (context, index) {
-                var moeda = moedas[index];
-                var moedaData = data[moeda]; // Dados específicos da moeda
-                return ListTile(
-                  title: Text(moedaData['name']),
-                  subtitle: Text(
-                    'Compra: ${moedaData['buy']} - Venda: ${moedaData['sell']}',
+      appBar: AppBar(
+        title: const Text(
+          'Cotações Brasil',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.refresh)),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // main card
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                elevation: 10,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Dollar',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text('R\$ 4.9544', style: TextStyle(fontSize: 20)),
+                      Text('+0,00', style: TextStyle(fontSize: 12)),
+                    ],
                   ),
-                  trailing: Text('Variação: ${moedaData['variation']}'),
-                );
-              },
-            );
-          }
-          return Text('Sem dados');
-        },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Outras moedas',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  Card(
+                    elevation: 6,
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        children: [
+                          Text(
+                            "EURO",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text("5.2597", style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text("-0.011"),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    elevation: 6,
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        children: [
+                          Text(
+                            "EURO",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text("5.2597", style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text("-0.011"),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    elevation: 6,
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        children: [
+                          Text(
+                            "EURO",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text("5.2597", style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text("-0.011"),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    elevation: 6,
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        children: [
+                          Text(
+                            "EURO",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text("5.2597", style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text("-0.011"),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    elevation: 6,
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        children: [
+                          Text(
+                            "EURO",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text("5.2597", style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text("-0.011"),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Bolsa de Valores',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      "IBOVESPA",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Sao Paulo, Brazil",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text("1.69", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "IBOVESPA",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Sao Paulo, Brazil",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text("1.69", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
